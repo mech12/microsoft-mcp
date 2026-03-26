@@ -746,11 +746,13 @@ def list_files(
 
 
 @mcp.tool
-def get_file(file_id: str, account_id: str, download_path: str) -> dict[str, Any]:
-    """Download a file from OneDrive to local path"""
+def get_file(file_id: str, account_id: str, download_path: str, drive_id: str = "") -> dict[str, Any]:
+    """Download a file from OneDrive or SharePoint to local path.
+    For SharePoint files, provide drive_id from search_files results."""
     import subprocess
 
-    metadata = graph.request("GET", f"/me/drive/items/{file_id}", account_id)
+    item_path = f"/drives/{drive_id}/items/{file_id}" if drive_id else f"/me/drive/items/{file_id}"
+    metadata = graph.request("GET", item_path, account_id)
     if not metadata:
         raise ValueError(f"File with ID {file_id} not found")
 
@@ -843,7 +845,7 @@ def search_files(
     account_id: str,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
-    """Search for files in OneDrive using the modern search API."""
+    """Search for files in OneDrive and SharePoint using the modern search API."""
     items = list(graph.search_query(query, ["driveItem"], account_id, limit))
 
     return [
@@ -854,6 +856,7 @@ def search_files(
             "size": item.get("size", 0),
             "modified": item.get("lastModifiedDateTime"),
             "download_url": item.get("@microsoft.graph.downloadUrl"),
+            "drive_id": item.get("parentReference", {}).get("driveId"),
         }
         for item in items
     ]

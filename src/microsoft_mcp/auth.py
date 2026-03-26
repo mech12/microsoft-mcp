@@ -7,7 +7,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CACHE_FILE = pl.Path.home() / ".microsoft_mcp_token_cache.json"
-SCOPES = ["https://graph.microsoft.com/.default"]
+DEFAULT_SCOPES = [
+    "User.Read",
+    "Mail.ReadWrite",
+    "Mail.Send",
+    "Calendars.ReadWrite",
+    "Contacts.Read",
+    "Files.ReadWrite",
+    "People.Read",
+    "Chat.ReadWrite",
+    "ChannelMessage.Read.All",
+    "ChannelMessage.Send",
+    "Channel.ReadBasic.All",
+    "Team.ReadBasic.All",
+    "User.ReadBasic.All",
+]
+
+_env_scopes = os.getenv("MICROSOFT_MCP_SCOPES")
+SCOPES = _env_scopes.split() if _env_scopes else DEFAULT_SCOPES
 
 
 class Account(NamedTuple):
